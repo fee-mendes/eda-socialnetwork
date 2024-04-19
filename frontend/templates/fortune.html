@@ -1,0 +1,35 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="px-4 py-5 my-5 text-center">
+    <img class="d-block mx-auto mb-4" src="/static/fortune.gif" width="50%" height="50%" alt="" >
+    <h1 class="display-5 fw-bold text-body-emphasis">Wheel of Fortune!</h1>
+    <div class="col-lg-6 mx-auto">
+      <h2 class="socialuser">Up for a Challenge?</h2>
+      <p class="lead mb-4">Try your luck!</p>
+      <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+        <button type="button" id="draw" class="btn btn-primary btn-lg px-4 gap-3">Enter Drawing</button>
+        <button type="button" id="enter_room" hidden class="btn btn-primary btn-lg px-4 gap-3">See Results</button>
+      </div>
+    </div>
+  </div>
+  <script>
+	$('#draw').click(function() {
+	   $("#draw").prop('disabled', true);
+	   $("#draw").addClass('btn-success');
+	   $("#draw").removeClass('btn-primary');
+	   $("#draw").text('Good Luck!');
+  	   jQuery.ajax({
+	     url: 'http://' + window.location.hostname + ':3001/draw/' + $.cookie('id'),
+	     success: function(data) {
+		     $("#enter_room").removeAttr('hidden');
+  	     }
+	   });
+	});
+	
+	$('#enter_room').click(function() {
+	   window.location.replace('/fortune/' + $.cookie('id'));	
+	});
+  </script>
+
+{% endblock content %}

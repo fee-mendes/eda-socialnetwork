@@ -1,0 +1,8 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <!-- Won't do anything, just redirect -->
+  <script>
+     window.location.replace('/followers/' + $.cookie('id'));
+  </script>
+{% endblock content %}

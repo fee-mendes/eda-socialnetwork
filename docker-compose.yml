@@ -1,6 +1,7 @@
 version: '3'
 services:
   redpanda:
+    hostname: redpanda
     command:
       - redpanda
       - start
@@ -31,30 +32,81 @@ services:
       - 19092:19092
       - 19644:9644
 
-  console:
-    container_name: redpanda-console
-    image: docker.redpanda.com/redpandadata/console:v2.4.5
-    entrypoint: /bin/sh
-    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
-    environment:
-      CONFIG_FILEPATH: /tmp/config.yml
-      CONSOLE_CONFIG_FILE: |
-        kafka:
-          brokers: ["redpanda:9092"]
-          schemaRegistry:
-            enabled: true
-            urls: ["http://redpanda:8081"]
-        redpanda:
-          adminApi:
-            enabled: true
-            urls: ["http://redpanda:9644"]
-    ports:
-      - 8080:8080
-    depends_on:
-      - redpanda
+  # console:
+  #  container_name: redpanda-console
+  #  image: docker.redpanda.com/redpandadata/console:v2.4.5
+  #  entrypoint: /bin/sh
+  #  command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+  #  environment:
+  #    CONFIG_FILEPATH: /tmp/config.yml
+  #    CONSOLE_CONFIG_FILE: |
+  #      kafka:
+  #        brokers: ["redpanda:9092"]
+  #        schemaRegistry:
+  #          enabled: true
+  #          urls: ["http://redpanda:8081"]
+  #      redpanda:
+  #        adminApi:
+  #          enabled: true
+  #          urls: ["http://redpanda:9644"]
+  #  ports:
+  #    - 8080:8080
+  #  depends_on:
+  #    - redpanda
 
   scylladb:
+      hostname: scylladb
       container_name: scylladb
       image: scylladb/scylla:5.4.3
       ports:
         - "9042:9042"
+      healthcheck:
+        test: ["CMD-SHELL", "sh -c $(curl -s -X GET --header 'Accept: application/json' 'http://localhost:10000/storage_service/native_transport')"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+
+  backend: 
+      hostname: backend
+      container_name: backend
+      image: backend:v1
+      build:
+        context: ./backend
+        dockerfile: backend.dockerfile
+      environment: 
+        - SCYLLA_URL=scylladb:9042
+        - REDPANDA_URL=redpanda:9092
+      ports:
+        - "3001:3001"
+      depends_on:
+        scylladb:
+          condition: service_healthy
+
+
+  consumer: 
+      hostname: consumer
+      container_name: consumer
+      image: consumer:v1
+      build:
+        context: ./consumer
+        dockerfile: consumer.dockerfile
+      environment:
+        - SCYLLA_URL=scylladb:9042
+        - REDPANDA_URL=redpanda:9092
+      depends_on:
+        scylladb:
+          condition: service_healthy
+
+
+  frontend: 
+      hostname: frontend
+      container_name: frontend
+      image: frontend:v1
+      build:
+        context: ./frontend
+        dockerfile: frontend.dockerfile
+      environment:
+        - BACKEND_URL=backend:3001
+      ports:
+        - "3000:3000"
+

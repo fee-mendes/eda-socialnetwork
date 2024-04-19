@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+      .info-icon:hover svg {
+         fill: red;
+       }
+
+      .liked svg {
+         fill: red;
+      }
+    </style>
+    {% if title=="404" %}
+    <link rel="stylesheet" href="static/glitch.css">
+    {% endif %}
+</head>
+<body>
+    {% include "nav.html" %}
+    <main>
+        {% block content %}{% endblock content %}
+    </main>
+    {% include "footer.html" %}
+
+<script>
+       if( $.cookie('scyllauser') == null ) {
+           $.getJSON('http://' + window.location.hostname + ':3001/users', function(data) {
+               // data variable
+               var id = data['id'];
+               var username = data['username'];
+
+               $.cookie('scyllauser', username);
+               $.cookie('id', id);
+	       window.location = "/";
+
+           });
+       } else {
+	  // post pageview
+        jQuery.ajax({
+       	   url: 'http://' + window.location.hostname + ':3001/view',
+	   type: "POST",
+	   data: JSON.stringify({ "id": $.cookie('id'), "page": location.pathname }),
+	   dataType: "json",
+	   contentType: "application/json; charset=utf-8",
+	   success: function(data){
+	    var response = data;
+	}
+});
+
+       }
+</script>
+
+</body>
+</html>

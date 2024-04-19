@@ -1,0 +1,102 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="px-4 py-5 my-5 text-center">
+    <img class="d-block mx-auto mb-4" src="/static/cover.png" width="50%" height="50%" alt="" >
+    <h1 class="display-5 fw-bold text-body-emphasis">{{ user.name }}</h1>
+    <small class="opacity-50 text-nowrap">Member since: {{ user.regdate }}</small>
+    <button type="button" id="follow" class="btn btn-primary">Follow</button>
+   <div class="container px-4 py-5" id="hanging-icons">
+    <h2 class="pb-2 border-bottom">Posts</h2>
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+      {% for post in posts %}
+      <div class="col d-flex align-items-start">
+        <div class="icon-square text-body-emphasis d-inline-flex align-items-center justify-content-center fs-4 flex-shrink-0 me-3">
+	   <i data-feather="send"></i>
+        </div>
+        <div>
+	<h3 class="fs-2 text-body-emphasis">{{ post.subject }}</h3>
+	<p><small class="opacity-50 text-nowrap">{{ post.ts }}</small>
+	 {{ post.content }}</p>
+	  <button type="button" type="button" id="repost-{{ loop.index }}" class="btn btn-primary">
+	    Repost
+          </button>
+	  <span class="info-icon post-{{ loop.index }}">
+	  <i data-feather="heart"></i><small id="like_count-{{ loop.index }}" class="opacity-50 text-nowrap"></small>
+          </span>
+        </div>
+      </div>
+      <script>
+	$(document).ready(function() {
+	   $(".post-{{ loop.index }}").click(function () {
+	      $(".post-{{ loop.index }}").addClass('liked');
+              jQuery.ajax({
+	        url: 'http://' + window.location.hostname + ':3001/like_post/{{ post.post_id }}',
+	        success: function() {
+			jQuery.ajax({
+			   url: 'http://' + window.location.hostname + ':3001/post/{{ post.post_id }}/likes',
+			   success: function(data) {
+				var new_count = data.count + 1;
+				$("#like_count-{{ loop.index }}").empty().append(' ' + new_count + ' Likes');
+			}
+			});
+		}
+	      });
+           });
+	
+	   jQuery.ajax({
+	     url: 'http://' + window.location.hostname + ':3001/post/{{ post.post_id }}/likes',
+	     success: function(data) {
+		   $("#like_count-{{ loop.index }}").append(' ' + data.count + ' Likes');
+	     }
+	   });
+
+	   $("#repost-{{ loop.index }}").click(function () {
+	      $("#repost-{{ loop.index }}").prop('disabled', true);
+	      $("#repost-{{ loop.index }}").addClass('btn-success');
+	      $("#repost-{{ loop.index }}").removeClass('btn-primary');
+	      $("#repost-{{ loop.index }}").text('Reposted!');
+	      jQuery.ajax({
+       	        url: 'http://' + window.location.hostname + ':3001/new_post',
+	        type: "POST",
+	        data: JSON.stringify({ "id": $.cookie('id'), "subject": "{{ post.subject }}", "content": "RT @{{ user.name }} {{ post.content }}" }),
+	        dataType: "json",
+	        contentType: "application/json; charset=utf-8",
+	        complete: function(){
+		}
+	      });
+	   });
+        });
+      </script>
+
+      {% endfor %}
+    </div>
+  </div>
+  </div>
+  <script>
+    $(document).ready(function() {
+       $("#follow").click(function () {
+	  $("#follow").prop('disabled', true);
+	  if ($.cookie('id') != '{{ user.id }}') {
+	    $("#follow").addClass('btn-success');
+	    $('#follow').removeClass('btn-primary');
+	    $('#follow').text('Followed!');
+	    jQuery.ajax({
+	      url: 'http://' + window.location.hostname + ':3001/follow',
+	      type: "POST",
+	      data: JSON.stringify({ "id": $.cookie('id'), "followed_id": "{{ user.id }}" }),
+	      dataType: "json",
+	      contentType: "application/json; charset=utf-8",
+	      success: function(data){
+	         var response = data;
+	      }
+	    });
+	  } else {
+	    $("#follow").addClass('btn-danger');
+	    $('#follow').removeClass('btn-primary');
+	    $('#follow').text('Uh-oh...');
+	  }
+       });
+    });
+  </script>
+{% endblock content %}

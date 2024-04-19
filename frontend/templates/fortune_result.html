@@ -1,0 +1,71 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="px-4 py-5 my-5 text-center">
+    {% if status.available %}
+      {% if status.win %}
+      <img class="d-block mx-auto mb-4" src="/static/winner.jpg" width="50%" height="50%" alt="" >
+      <h1 class="display-5 fw-bold text-body-emphasis">Congratulations!</h1>
+    <div class="col-lg-6 mx-auto">
+      <h2 class="socialuser">You did it!</h2>
+      <p class="lead mb-4">Now let us know who you are ;-)</p>
+      <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+	 E-mail: <input type="email" class="form-control" style="max-width: 30%" id="email" placeholder="some@where.web" required />
+	 <button type="button" id="submit" class="btn btn-primary mb-2">Claim</button>
+      </div>
+    </div>
+    <script>
+   $(document).ready(function() {
+	   $("#submit").click(function () {
+	    var email_empty = ($('#email').val() == "" || $('#email').val() == null);
+
+	    if (email_empty) {
+		    alert("Required fields missing.");
+	    } else {
+       	       // post pageview
+	       jQuery.ajax({
+       	      	   url: 'http://' + window.location.hostname + ':3001/draw/submit',
+	   	   type: "POST",
+	   	   data: JSON.stringify({ "id": $.cookie('id'), "email": $('#email').val() }),
+	   	   dataType: "json",
+	   	   contentType: "application/json; charset=utf-8",
+	   	   complete: function(){
+		      $('#email').val('');
+		      $('#submit').addClass('btn-success');
+		      $('#submit').removeClass('btn-primary');
+  		      $("#submit").text('Thank You!');
+		      $("#submit").prop('disabled', true);
+		   }
+	       });
+	   }
+	   });
+   });
+    </script>
+
+
+      {% else %}
+      <img class="d-block mx-auto mb-4" src="/static/loser.gif" width="50%" height="50%" alt="" >
+    <h1 class="display-5 fw-bold text-body-emphasis">Oh No...</h1>
+    <div class="col-lg-6 mx-auto">
+      <h2 class="socialuser">Best of luck next time!</h2>
+      <p class="lead mb-4">You may still listen to music tho!</p>
+      <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+         <iframe width="420" height="315" src="https://www.youtube.com/embed/2yJgwwDcgV8"></iframe>
+      </div>
+    </div>
+
+      {% endif %}
+    {% else %}
+    <img class="d-block mx-auto mb-4" src="/static/cards.gif" width="50%" height="50%" alt="" >
+    <h1 class="display-5 fw-bold text-body-emphasis">Shuffling...</h1>
+    <div class="col-lg-6 mx-auto">
+      <h2 class="socialuser">While you wait...</h2>
+      <p class="lead mb-4">Listen to some music</p>
+      <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+	 <iframe width="420" height="315" src="https://www.youtube.com/embed/2yJgwwDcgV8"></iframe> 
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+{% endblock content %}

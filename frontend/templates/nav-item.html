@@ -1,0 +1,46 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="px-4 py-5 my-5 text-center">
+    <img class="d-block mx-auto mb-4" src="/static/cover.png" width="50%" height="50%" alt="" >
+    <h1 class="display-5 fw-bold text-body-emphasis">Hello...</h1>
+    <div class="col-lg-6 mx-auto">
+      <h2 class="socialuser"></h2>
+      <script>
+        var username = $.cookie('scyllauser');
+        $("h2").text(username);
+	$("h2").append(' - <a href="/users/' + $.cookie('id') + '">View Profile</a>');
+      </script>
+      <h4 class="counters"><h3>
+      <script>
+	jQuery.ajax({
+		url: 'http://' + window.location.hostname + ':3001/query',
+		type: "POST",
+		data: JSON.stringify({ "id": $.cookie('id'), "kind": "count" }),
+		dataType: "json",
+		contentType: "application/json; charset=utf-8",
+		success: function(data){
+		    var response = data;
+		    $("h4").text("You have " + response.follower_count + " followers, and " + response.profile_views + " profile views!");
+		}
+	});
+
+      </script>
+      <p class="lead mb-4">Thanks for joining our Social Network! Why don't you just get started with engaging with your peers and creating your own community?</p>
+      <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+        <button type="button" id="connect" class="btn btn-primary btn-lg px-4 gap-3">Connect</button>
+        <button type="button" id="share" class="btn btn-outline-secondary btn-lg px-4">Share</button>
+      </div>
+    </div>
+  </div>
+  <script>
+	$('#connect').click(function() {
+        	window.location.href = '/community';
+	});
+
+	$('#share').click(function() {
+		window.open('http://twitter.com/share?text=I am currently attending the Event-Driven Architecture Masterclass and Having Fun!&url=https://www.scylladb.com&hashtags=scylladb,redpanda');
+	});
+  </script>
+
+{% endblock content %}

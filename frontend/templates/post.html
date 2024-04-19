@@ -1,0 +1,49 @@
+{% extends "main.html" %}
+
+{% block content %}
+  <div class="px-4 py-5 my-5 text-center">
+    <img class="d-block mx-auto mb-4" src="/static/cover.png" width="50%" height="50%" alt="" >
+    <h1 class="display-5 fw-bold text-body-emphasis">Say Something !</h1>
+        <form id="post">
+	  <p align="center">
+	   <input type="text" class="form-control" style="max-width: 30%" id="subject" placeholder="1, 2, 3..." required />
+	  </p>
+	   <div></div>
+	  <p align="center">
+	   <textarea class="form-control" style="max-width: 30%" id="content" placeholder="What's Up?" rows="3" required></textarea>
+	  </p>
+	   <div></div>
+	  <p align="center">
+	   <button type="button" id="submit" class="btn btn-primary mb-2">Launch!</button>
+	  </p>
+	</form>
+  </div>
+<script>
+   $(document).ready(function() {
+	   $("#submit").click(function () {
+	    var subject_empty = ($('#subject').val() == "" || $('#subject').val() == null);
+	    var content_empty = ($('#content').val() == "" || $('#content').val() == null);
+
+	    if (subject_empty || content_empty) {
+		    alert("Required fields missing.");
+	    } else {
+       	       // post pageview
+	       jQuery.ajax({
+       	      	   url: 'http://' + window.location.hostname + ':3001/new_post',
+	   	   type: "POST",
+	   	   data: JSON.stringify({ "id": $.cookie('id'), "subject": $('#subject').val(), "content": $('#content').val() }),
+	   	   dataType: "json",
+	   	   contentType: "application/json; charset=utf-8",
+	   	   complete: function(){
+		      $('#subject').val('');
+		      $('#content').val('');
+		      $('#submit').addClass('btn-success');
+		      $('#submit').removeClass('btn-primary');
+		   }
+	       });
+	   }
+	   });
+   });
+</script>
+
+{% endblock content %}
